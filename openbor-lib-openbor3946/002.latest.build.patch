@@ -1,0 +1,24 @@
+--- Makefile.orig	2020-04-17 12:39:24.000000000 +0200
++++ Makefile	2020-04-17 13:50:11.255270869 +0200
+@@ -143,9 +143,9 @@
+ BUILD_SDL_IO    = 1
+ BUILD_TREMOR    = 1
+ BUILDING        = 1
+-CC  	        = $(PNDDEV)/bin/arm-none-linux-gnueabi-gcc
+-INCLUDES        = $(PNDDEV)/include \
+-                  $(PNDDEV)/include/SDL
++CC  	        = gcc
++INCLUDES        = /usr/include \
++                  /usr/include/SDL
+ OBJTYPE         = elf
+ LIBRARIES       = $(PNDDEV)/lib
+ ifeq ($(BUILD_PANDORA), 0)
+@@ -266,7 +266,7 @@
+ STRIP           = $(PREFIX)strip $(TARGET) -o $(TARGET_FINAL)
+ endif
+ ifdef BUILD_PANDORA
+-STRIP 	        = $(PNDDEV)/bin/arm-none-linux-gnueabi-strip $(TARGET) -o $(TARGET_FINAL)
++STRIP 	        = strip $(TARGET) -o $(TARGET_FINAL)
+ endif
+ ifdef BUILD_GP2X
+ STRIP 	        = $(GP2XDEV)/arm-open2x-linux-strip $(TARGET) -o $(TARGET_FINAL)

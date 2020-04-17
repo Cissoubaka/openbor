@@ -1,0 +1,30 @@
+--- engine/sdl/sdlport.c.orig	2018-08-21 12:49:16.000000000 +0200
++++ engine/sdl/sdlport.c	2020-04-12 17:47:45.000000000 +0200
+@@ -137,7 +137,27 @@
+ 	dirExists(logsDir, 1);
+ 	dirExists(screenShotsDir, 1);
+ 
++	if (argc <= 1)     goto menu;
++	int argl = strlen(argv[1]);
++	if (argl <= 3) goto menu;
++
++	loadsettings();
++	strcpy(packfile, argv[1]);
++	if(dirExists(packfile, 0)) {
++		if (packfile[argl-1] != '/') strcat(packfile, "/");
++		goto run_openbor;
++	}
++	if(!strcmp( &packfile[strlen(packfile) - 4], ".pak")) {
++		if(fileExists(packfile)) goto run_openbor;
++	}
++
++
++menu:
++	printf("Executing Menu\n");
+ 	Menu();
++
++run_openbor:
++	printf("Running packfile %s\n", packfile);
+ #ifndef SKIP_CODE
+ 	getPakName(pakname, -1);
+ 	video_set_window_title(pakname);

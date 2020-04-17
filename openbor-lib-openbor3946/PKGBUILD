@@ -1,0 +1,59 @@
+pkgname=('openbor-lib-openbor3946')
+pkgver=3.0.3946
+pkgrel=1
+pkgdesc="OpenBOR 3.0 (Build 3946)"
+arch=('armv7h')
+url="http://www.chronocrash.com"
+license=('BSD')
+makedepends=('git' 'yasm' 'imagemagick' 'glu' 'libvpx' 'libpng' 'libvorbis' 'sdl2_gfx')
+optdepends=('libgl: OpenGL video mode')
+source=(
+  'https://github.com/Darknior/OpenBORv32b3946/archive/master.zip'
+  '001.launch.as.param.patch'
+  '002.latest.build.patch'
+  'https://github.com/crcerror/OpenBOR-63xx-RetroPie-openbeta/raw/master/libGL-binary/libGL.so.1.gz'
+)
+md5sums=('ce3a0d7e45b4e0686b4ee87a52f94115'
+         'ded1a00ca76280dfc9deabed6661e4b5'
+         '3c7b5b3a35802669fcf9cb2daf77fe84'
+         'd70a5dacab56db342a3eadaa9e1633e4'
+)
+
+prepare()
+{
+  cd ${srcdir}/OpenBORv32b3946-master/
+
+  #patch -p0 <../001.launch.as.param.patch
+
+  #cd engine
+  patch -p0 <../002.latest.build.patch
+  #patch -p0 <../001.makefile.patch
+
+  # disable abort on warnings/errors
+  sed 's/-Werror//' -i Makefile
+  # disable RPATH
+  sed 's/-Wl,-rpath,$(LIBRARIES)//' -i Makefile
+  # verbose output
+  #sed 's/@$(CC)/$(CC)/' -i Makefile
+  # fix a locale warning
+  sed 's|en_US.UTF-8|C|g' -i version.sh
+}
+
+build()
+{
+  cd ${srcdir}/OpenBORv32b3946-master
+
+  # work around 'special' build system
+  chmod +x version.sh
+  ./version.sh
+  make SDKPATH=/usr LNXDEV=/usr/bin BUILD_PANDORA=1 GCC_TARGET=$CARCH
+}
+
+package()
+{
+  mkdir -p "$pkgdir"/roms/openbor/.data/lib/
+  # launcher + binary
+  install -Dm755 "${srcdir}"/OpenBORv32b3946-master/OpenBOR "$pkgdir"/roms/openbor/.data/OpenBOR3946
+  install -Dm755 /usr/lib/{libSDL2_gfx-1.0.so.0,libm.so.6,libvpx.so.6,libvorbisidec.so.1} "$pkgdir"/roms/openbor/.data/lib/
+  install -Dm755 libGL.so.1 "$pkgdir"/roms/openbor/.data/lib/
+}

@@ -1,0 +1,16 @@
+--- Makefile.orig	2020-04-17 12:11:24.568710941 +0200
++++ Makefile	2020-04-17 13:33:39.548622087 +0200
+@@ -24,9 +24,10 @@
+ endif
+ BUILD_VORBIS    = 1
+ BUILDING        = 1
+-CC              ?= gcc
+-INCLUDES        = $(SDKPATH)/include \
+-                  $(SDKPATH)/include/SDL
++CC              = gcc
++INCLUDES        = /usr/include \
++                  /usr/include/SDL \
++                  
+ 
+ #----------------------------------------------------------------------------------------------------
+ # Directories

@@ -1,0 +1,56 @@
+pkgname=('openbor-lib-openbor3318')
+pkgver=3.0.3318
+pkgrel=1
+pkgdesc="OpenBOR 3.0 (Build 3318)"
+arch=('armv7h')
+url="http://www.chronocrash.com"
+license=('BSD')
+makedepends=('git' 'yasm' 'imagemagick' 'glu' 'libvpx' 'libpng' 'libvorbis' 'sdl2_gfx')
+optdepends=('libgl: OpenGL video mode')
+source=(
+  'https://github.com/Darknior/OpenBORv32b3318-3400/archive/master.zip'
+  '002.makefile.patch'
+  'https://github.com/crcerror/OpenBOR-63xx-RetroPie-openbeta/raw/master/libGL-binary/libGL.so.1.gz'
+)
+md5sums=('915ac4766de6ef7f02cd200b450b81ad'
+	 '0515897a939d7955eaeba2c94bae236a'
+         'd70a5dacab56db342a3eadaa9e1633e4'
+)
+
+prepare()
+{
+  cd ${srcdir}/OpenBORv32b3318-3400-master/
+
+  #patch -p0 <../001.launch.as.param.patch
+
+  #cd engine
+  #patch -p0 <../../002.latest.build.patch
+  patch -p0 <../002.makefile.patch
+
+  # disable abort on warnings/errors
+  #sed 's/-Werror//' -i Makefile
+  # disable RPATH
+  #sed 's/-Wl,-rpath,$(LIBRARIES)//' -i Makefile
+  # verbose output
+  #sed 's/@$(CC)/$(CC)/' -i Makefile
+  # fix a locale warning
+  sed 's|en_US.UTF-8|C|g' -i version.sh
+}
+
+build()
+{
+  cd ${srcdir}/OpenBORv32b3318-3400-master
+
+  # work around 'special' build system
+  ./version.sh
+  make SDKPATH=/usr LNXDEV=/usr/bin BUILD_PANDORA=1 GCC_TARGET=$CARCH
+}
+
+package()
+{
+  mkdir -p "$pkgdir"/roms/openbor/.data/lib/
+  # launcher + binary
+  install -Dm755 "${srcdir}"/OpenBORv32b3318-3400-master/OpenBOR "$pkgdir"/roms/openbor/.data/OpenBOR3318
+  install -Dm755 /usr/lib/{libSDL2_gfx-1.0.so.0,libm.so.6,libvpx.so.6,libvorbisidec.so.1} "$pkgdir"/roms/openbor/.data/lib/
+  install -Dm755 libGL.so.1 "$pkgdir"/roms/openbor/.data/lib/
+}

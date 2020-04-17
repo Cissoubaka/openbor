@@ -1,0 +1,60 @@
+pkgname=('openbor-lib-openbor4432')
+pkgver=3.0.4432
+pkgrel=1
+pkgdesc="OpenBOR 3.0 (Build 4432)"
+arch=('armv7h')
+url="http://www.chronocrash.com"
+license=('BSD')
+makedepends=('git' 'yasm' 'imagemagick' 'glu' 'libvpx' 'libpng' 'libvorbis' 'sdl2_gfx')
+optdepends=('libgl: OpenGL video mode')
+source=(
+  'https://github.com/DCurrent/openbor/archive/v4432.tar.gz'
+  '001.launch.as.param.patch'
+  '002.latest.build.patch'
+  '003.makefile.patch'
+  'https://github.com/crcerror/OpenBOR-63xx-RetroPie-openbeta/raw/master/libGL-binary/libGL.so.1.gz'
+)
+md5sums=('ded94ef4a9290473a0a2f3ef04603d67'
+         'ded1a00ca76280dfc9deabed6661e4b5'
+         '8b2ca0aec12d708b58a05308c07bbffd'
+         '6e7ac4dd403e1edf86adc7b3295d699c'
+         'd70a5dacab56db342a3eadaa9e1633e4'
+)
+
+prepare()
+{
+  cd ${srcdir}/openbor-4432/
+
+  patch -p0 <../001.launch.as.param.patch
+
+  cd engine
+  patch -p0 <../../002.latest.build.patch
+  patch -p0 <../../003.makefile.patch
+
+  # disable abort on warnings/errors
+  sed 's/-Werror//' -i Makefile
+  # disable RPATH
+  sed 's/-Wl,-rpath,$(LIBRARIES)//' -i Makefile
+  # verbose output
+  #sed 's/@$(CC)/$(CC)/' -i Makefile
+  # fix a locale warning
+  sed 's|en_US.UTF-8|C|g' -i version.sh
+}
+
+build()
+{
+  cd ${srcdir}/openbor-4432/engine
+
+  # work around 'special' build system
+  ./version.sh
+  make SDKPATH=/usr LNXDEV=/usr/bin BUILD_PANDORA=1 GCC_TARGET=$CARCH
+}
+
+package()
+{
+  mkdir -p "$pkgdir"/roms/openbor/.data/lib/
+  # launcher + binary
+  install -Dm755 "${srcdir}"/openbor-4432/engine/OpenBOR "$pkgdir"/roms/openbor/.data/OpenBOR4432
+  install -Dm755 /usr/lib/{libSDL2_gfx-1.0.so.0,libm.so.6,libvpx.so.6,libvorbisidec.so.1} "$pkgdir"/roms/openbor/.data/lib/
+  install -Dm755 libGL.so.1 "$pkgdir"/roms/openbor/.data/lib/
+}
